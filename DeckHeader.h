@@ -22,11 +22,11 @@ class DeckOfCards
 	bool StraightFlush();
 	void RoyalFlush();
 
-	int setRankIndex(const int&);
-	void getRankIndex() const;
+	void setRankIndex(const int&);
+	int getRankIndex() const;
 
-	int setSuitIndex(const int&);
-	void getSuitIndex() const;
+	void setSuitIndex(const int&);
+	int getSuitIndex() const;
 
   private:
 	size_t nextCard = 0; // tracks the amount of cards that were drawn

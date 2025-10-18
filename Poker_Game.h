@@ -1,8 +1,8 @@
 #ifndef POKERGAMEHEADER_H
 #define POKERGAMEHEADER_H
-#include "Player.cpp"
+#include "Player.h"
 #include "DeckHeader.h"
-
+#include "Dealer.h"
 template <typename U>
 class Game
 {
@@ -10,7 +10,8 @@ class Game
     template <typename T>
     friend ostream &operator<< (ostream &,const Game<T> &);
 
-    Game(const string&, int&, int&);             // Constructor
+    Game();             // Constructor
+//    Game(const string&, int&, int&);             // Constructor
     Game(const Game&);  // Copy Constructor
     ~Game();		// Destructor
 
@@ -37,7 +38,7 @@ class Game
     int getRankValue() const;
 
     void setHandName(const string&);
-    string getHandName() const;
+    int getHandName() const;
 
     void setHighCard(const vector<DeckOfCards<U>>&);
     string getHighCard() const;
@@ -55,7 +56,7 @@ class Game
     DeckOfCards<U> highCard;
     DeckOfCards<U> deck;
     Player<U> player;
-    Player<U> dealer;
+    Dealer<U> dealer;
     vector<DeckOfCards<U>> commonCards;
 };
 

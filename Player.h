@@ -3,16 +3,15 @@
 #include "DeckHeader.h"
 
 template<typename P>
-class Player
-{
+class Player{
   public:
 	template <typename T>
 	friend istream &operator>> (istream &,Player<T>&);
 
 	// constructors
 	Player();
-//	Player(const string&);
-	Player(const string&);
+	Player(const Player<P>&);
+//	Player(const string&, int&, int&, int&);
 	~Player();
 
 	// Hand access functions
@@ -44,7 +43,7 @@ class Player
   private:
 	string playerName;
 	vector<DeckOfCards<P>> playerHand;
-	int win = 0, loss = 0, tie;
+	int win, loss, tie;
 };
 
 #endif

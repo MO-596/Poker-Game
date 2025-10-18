@@ -2,7 +2,7 @@
 // Primary constructor: set initial name and zero stats
 template<typename P>
 Player<P>::Player()
- : playerName(playerName), win(0), loss(0), tie(0)
+ : playerName(""), win(0), loss(0), tie(0)
 {
   // Empty, gets name from the operator overloading of >>
 }
@@ -10,8 +10,8 @@ Player<P>::Player()
 ///////////////////////////////////////////////////
 // Auxiliary name-based constructor: same behavior
 template<typename P>
-Player<P>::Player(const string& copyName)
- : playerName(copyName), win(0), loss(0), tie(0)
+Player<P>::Player(const Player<P>& copy)
+ : playerName(copy.playerName), win(copy.win), loss(copy.loss), tie(copy.tie)
 {
 // Empty, copies from primary constrcutor
 }
@@ -163,6 +163,7 @@ string Player<P>::NameChecker(string& player_name)
   }
  return player_name;
 }
+
 /////////////////////////////
 // Extraction operator for Player: reads and validates name
 template<typename T>
