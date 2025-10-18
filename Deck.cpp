@@ -60,7 +60,7 @@ void DeckOfCards<D>::Dealing()
     Hand[i][0] = row;
     Hand[i][1] = col;
 
-    cout << face[column] << " of " << suit[row] << "\n";
+    cout << face[col] << " of " << suit[row] << "\n";
   }
   cout << "\n";
 }
@@ -86,7 +86,7 @@ unsigned int DeckOfCards<D>::drawOne()
 {
   // maps linear index into the Deck array
   size_t row = nextCard / 13;
-  size_t col = nextCard / 13;
+  size_t col = nextCard % 13;
 
   unsigned int cardID = Deck[row][col]; // grab the card id (1..52) from Deck[row][col]
   ++nextCard;
@@ -207,10 +207,10 @@ void DeckOfCards<D>::Straight()
 {
   int S[5] = { 0 };		//array to store copy of hand to compare
   int temp = 0;
-  size_t i, pass, compare;	//loop counters
+  size_t pass, compare;	//loop counters
   bool isStraight = true;
 
-  for (i = 0; i < 5; i++)
+  for (size_t i = 0; i < 5; i++)
   {
     S[i] = Hand[i][1];	//stores the array here
   }
@@ -230,7 +230,7 @@ void DeckOfCards<D>::Straight()
   }
 
   // Check for a consecutive run
-  for(size_t = i; i < 5; i++)
+  for(size_t i = 1; i < 5; i++)
   {
     if(S[i] != S[i - 1] + 1)
     {
@@ -403,7 +403,7 @@ void DeckOfCards<D>::RoyalFlush()
 //////////////////////////////////////////////////////////////////////////
 
 template<typename D>
-int DeckOfCards<D>::setRankIndex(const int& rankIndex)
+void DeckOfCards<D>::setRankIndex(const int& rankIndex)
 {
   this->rankIndex = (rankIndex < 0) ? 0 : rankIndex;
   if(rankIndex < 0)
@@ -419,14 +419,14 @@ int DeckOfCards<D>::setRankIndex(const int& rankIndex)
 //////////////////////////////////////////////////////////////////////////
 
 template<typename D>
-void DeckOfCards<D>::getRankIndex() const
+int DeckOfCards<D>::getRankIndex() const
 {
   return rankIndex;
 }
 //////////////////////////////////////////////////////////////////////////
 
 template<typename D>
-int DeckOfCards<D>::setSuitIndex(const int& suitIndex)
+void DeckOfCards<D>::setSuitIndex(const int& suitIndex)
 {
   this->suitIndex = (suitIndex < 0) ? 0 : suitIndex;
   if(suitIndex < 0)
@@ -442,7 +442,7 @@ int DeckOfCards<D>::setSuitIndex(const int& suitIndex)
 //////////////////////////////////////////////////////////////////////////
 
 template<typename D>
-void DeckOfCards<D>::getSuitIndex() const
+int DeckOfCards<D>::getSuitIndex() const
 {
   return suitIndex;
 }
