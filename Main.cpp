@@ -14,7 +14,8 @@ int InputValidation(int&);
 
 // user processes
 bool process(int, DeckOfCards<int> *, Dealer<string> *, Player<string> *, Game<int> *);
-
+bool playProcess(int,Game<int>*);
+bool
 
 int main()
 {
