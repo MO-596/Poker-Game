@@ -32,6 +32,7 @@ class Game
 
     void addWins();
     void check(const vector<DeckOfCards<U>>&, const vector<DeckOfCards<U>>&);
+//    void evaluteHand(const vector<DeckOfCards<U>>&,int&,int&,string&);
     void determineWinner();
 
     void setRankValue(const string&);
@@ -46,8 +47,16 @@ class Game
     int valueInput(int&);
 
   private:
+    void evaluteHand(const vector<DeckOfCards<U>>&,int&,int&,string&);
+    void computeCounts(const vector<DeckOfCards<U>>&, std::vector<int>[], int&);
+    void detectMultiples(int&, std::vector<int>&, std::vector<int>&);
+    void detectStraight(bool&, int&);
+    void detectFlushAndStraightFlush(std::vector<int>&, bool&, int&, int&, bool&, int&);
+
     vector<pair<int,int>> playerCards; // will combine player hole cards and community cards into a single list
     vector<pair<int,int>> dealerCards; // will combine dealer hole cards and community cards into a single list
+    int rankCount[13] = {0};
+    int suitCount[4] = {0};
 
     int bet, credit, winner, newCredit;
     int rankValue;

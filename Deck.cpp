@@ -95,6 +95,7 @@ unsigned int DeckOfCards<D>::drawOne()
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
+/*
 template<typename D>
 void DeckOfCards<D>::Pair()
 {
@@ -109,7 +110,8 @@ void DeckOfCards<D>::Pair()
   {
     if (counter[j] == 2)
     {
-	cout << "Hand contains a pair of: " << face[j] << endl;
+	cout << "Pair of " << face[j] <<endl;
+	//cout << "Hand contains a pair of: " << face[j] << endl;
     }
   }
 
@@ -243,7 +245,7 @@ void DeckOfCards<D>::Straight()
   if(!isStraight)
   {
     if( S[0] == 0 && S[1] == 9 && S[2] == 10 &&
-    S[3] == 11 & S[4] == 12 )
+    S[3] == 11 && S[4] == 12 )
     {
       isStraight = true;
       cout << "Hand is a Straight from Ten to Ace" << endl;
@@ -262,7 +264,7 @@ void DeckOfCards<D>::Straight()
   {
     cout << "Hand is a Straight: " << face[S[0]] << " of " << face[S[4]]<<endl;
   }
-*/
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -400,6 +402,7 @@ void DeckOfCards<D>::RoyalFlush()
   }
   cout << "Hand contains a Royal Flush of: " << suit[flushSuit] << endl;
 }
+*/
 //////////////////////////////////////////////////////////////////////////
 
 template<typename D>
@@ -445,4 +448,15 @@ template<typename D>
 int DeckOfCards<D>::getSuitIndex() const
 {
   return suitIndex;
+}
+//////////////////////////////////////////////////////////////////////////
+
+template<typename D>
+std:: string DeckOfCards<D>::toString() const
+{
+  if(rankIndex < 0 || rankIndex > 12 || suitIndex < 0 || suitIndex > 3){
+    return "Unkown";
+  }
+
+  return std::string(face[rankIndex]) + " of " + suit[suitIndex];
 }
