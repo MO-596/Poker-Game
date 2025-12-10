@@ -1,7 +1,7 @@
 #ifndef DEALERHEADER_H
 #define DEALERHEADER_H
 #include "DeckHeader.h"
- 
+
 template<typename D>
 class Dealer {
   public:

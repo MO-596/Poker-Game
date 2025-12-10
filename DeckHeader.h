@@ -28,6 +28,8 @@ class DeckOfCards
 	void setSuitIndex(const int&);
 	int getSuitIndex() const;
 
+	string toString() const;
+
   private:
 	size_t nextCard = 0; // tracks the amount of cards that were drawn
 

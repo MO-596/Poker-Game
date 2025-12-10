@@ -5,12 +5,12 @@ template <typename U>
 //Game<U>::Game(const string& playerName, int& bet, int& credit)
 Game<U>::Game()
 : bet(0), credit(0), winner(-1), newCredit(0), rankValue(0),
-   handName(""), highCard(), deck(), player(), dealer()
+   handName(""), highCard(), deck(), player(), dealer(), roundNum(0)
 //player(string("")), dealer(string("Dealer")),
 {
   deck.Shuffling();
-  setBet(bet);
-  setCredit(credit);
+//  setBet(bet);
+  //setCredit(credit);
 }
 
 //////////////////////////////////////////////////////
@@ -129,13 +129,30 @@ void Game<U>::dealCards(int& numCards)
   commonCards.clear();
 
 //  for(int i = 0; i < numCards; i++)
-  // Deal two to player & dealer
+  //Helper lambda to convert a card ID (1..52) into a DeckOfCards<U> "card"
+  auto makeCardFromId = [](unsigned int id){
+    DeckOfCards<U> card;
+    int row = static_cast<int>((id - 1) / 13);
+    int col = static_cast<int>((id - 1) % 13);
+
+    card.setSuitIndex(row);
+    card.setRankIndex(col);
+   return card;
+  };
+
+  // Deal two whole cards to player & dealer
   for(int i = 0; i < 2; i++)
   {
-    auto playerCard = deck.drawOne();
+    //TODO: Apperatnly its passing an unsigned int, rework this or the
+    // class where it comes from.
+    //auto playerCard = deck.drawOne();
+    unsigned int playerId = deck.drawOne();
+    DeckOfCards<U> playerCard = makeCardFromId(playerId);
     player.addCard(playerCard);
 
-    auto dealerCard = deck.drawOne();
+    //auto dealerCard = deck.drawOne();
+    unsigned int dealerId = deck.drawOne();
+    DeckOfCards<U> dealerCard = makeCardFromId(dealerId);
     dealer.addCard(dealerCard);
 /*
     DeckOfCards<U> playerCard = deck.Dealing();
@@ -146,11 +163,13 @@ void Game<U>::dealCards(int& numCards)
 */
   }
 
-  // Community cards
+  //Deals community cards(flop/turn/river)
   for(int i = 0; i < numCards; i++)
   {
-    auto card = deck.drawOne();
-    commonCards.push_back(card);
+    //auto card = deck.drawOne();
+    unsigned int id = deck.drawOne();
+    DeckOfCards<U> communityCard = makeCardFromId(id);
+    commonCards.push_back(communityCard);
   }
 
 }
@@ -224,14 +243,16 @@ void Game<U>::check(const vector<DeckOfCards<U>>& playerCom, const vector<DeckOf
   // Local storage for players best hand values
   int playerRankValue = 0;// 0 = High Card, 1 = Pair, ... up to N = Royal Flush
   int playerHighCard = 0;// 0 to 12 for Ace ... King
-  string playerHandName;
+  std::string playerHandName;
 
   // Local storage for dealers best‐hand values:
   int dealerRankValue = 0;
   int dealerHighCard = 0;
-  string dealerHandName;
+  std::string dealerHandName;
 
-  playerRanks.reserve(playerCom.size());
+  //playerRanks.reserve(playerCom.size());
+  evaluteHand(playerCom, playerRankValue, playerHighCard, playerHandName);
+  evaluteHand(dealerCom, dealerRankValue, dealerHighCard, dealerHandName);
 
    // Evaluate players best 5-card hand (out of playerCombined)
    // You must fill in this block with your logic to set:
@@ -248,6 +269,7 @@ void Game<U>::check(const vector<DeckOfCards<U>>& playerCom, const vector<DeckOf
    // playerHighCard   = numeric index of the subsets top card (0...12);
    // playerHandName   = textual name (e.g. Two Pair or Flush).
 
+/*
   // Combine dealer hole cards and community cards into a single list
   for (auto& card : playerCom)
   {
@@ -272,61 +294,238 @@ void Game<U>::check(const vector<DeckOfCards<U>>& playerCom, const vector<DeckOf
     dealerHighCard = dealerRanks.front();
     dealerRankValue = 0;                // 0 = High Card
     dealerHandName = "High Card";
-
+*/
   // Compare playerRankValue vs. dealerRankValue:
   if (playerRankValue > dealerRankValue)
-  {
+  {  // Player has better hand category
     winner = 1;  // player
     rankValue = playerRankValue;
     handName  = playerHandName;
-    // highCard (member) should store the actual DeckOfCards<U> instance
-    // that corresponds to playerHighCard. You might need a method to
-    // convert a rank index back into a single card DeckOfCards<U>.
-    highCard = DeckOfCards<U>::setRankIndex(playerHighCard);
+    //highCard = DeckOfCards<U>::setRankIndex(playerHighCard);
+    //highCard.setRankIndex(playerHighCard);
+    setHighCard(playerCom); // Choose the best high card from player's combined cards
   }
   else if (playerRankValue < dealerRankValue)
-  {
+  { // Dealer has better hand category
     winner = 2;  // dealer
     rankValue = dealerRankValue;
     handName  = dealerHandName;
-    // highCard (member) should store the actual DeckOfCards<U> instance
-    // that corresponds to playerHighCard. You might need a method to
-    // convert a rank index back into a single card DeckOfCards<U>.
-    highCard = DeckOfCards<U>::setRankIndex(dealerHighCard);
+//    highCard = DeckOfCards<U>::setRankIndex(dealerHighCard);
+    //highCard.setRankIndex(dealerHighCard);
+    setHighCard(dealerCom);// Choose the best high card from dealer's combined cards
   }
   else
   {
-    // tiebreak by high card
+    // Same hand event: tiebreak by high card
      if (playerHighCard > dealerHighCard)
      {
        winner = 1;  // player
        rankValue = playerRankValue;
        handName  = playerHandName;
-       // highCard (member) should store the actual DeckOfCards<U> instance
-       // that corresponds to playerHighCard. You might need a method to
-       // convert a rank index back into a single card DeckOfCards<U>.
-       highCard = DeckOfCards<U>::setRankIndex(playerHighCard);
+//       highCard = DeckOfCards<U>::setRankIndex(playerHighCard);
+       //highCard.setRankIndex(playerHighCard);
+       setHighCard(playerCom);
      }
-     else if (playerHighCard > dealerHighCard)
+     else if (playerHighCard < dealerHighCard)
      {
         winner = 2;  // dealer
         rankValue = dealerRankValue;
         handName  = dealerHandName;
-        // highCard (member) should store the actual deckOfCards<U> instance
-        // convert a rank index back into a single card DeckOfCards<U>.
-        highCard = DeckOfCards<U>::setRankIndex(dealerHighCard);
+//        highCard = DeckOfCards<U>::setRankIndex(dealerHighCard);
+	//highCard.setRankIndex(dealerHighCard);
+        setHighCard(dealerCom);
      }
      else
-     {
+     {  // Excat tie: same cat. and same high card
         winner = 0;
         rankValue = playerRankValue;
         handName  = playerHandName;
-        // highCard (member) should store the actual DeckOfCards<U> instance
-        // that corresponds to playerHighCard. You might need a method to
-        // convert a rank index back into a single card DeckOfCards<U>.
-        highCard = DeckOfCards<U>::setRankIndex(playerHighCard);
+//        highCard = DeckOfCards<U>::setRankIndex(playerHighCard);
+	//highCard.setRankIndex(playerHighCard);
+        setHighCard(playerCom);// TODO: THIS IS TEMPORARY, NEED TO DO SET THIS A TIE & NOONE WINS
      }
   }
+}
+
+//////////////////////////////////////////////////////
+// Evaluate a 7-card hand for High Card / Pair / Two Pair
+// outRankValue: 0 = High Card, 1 = Pair, 2 = Two Pair
+// outHighCard:  rank index of the main combination (0..12)
+template <typename U> // Helper Function
+void Game<U>::evaluteHand(const vector<DeckOfCards<U>>& cards, int& outRankValue, int& outHighCard,string& outHandName)
+{
+//  int rankCount[13] = {0};
+//  int suitCount[4] = {0};
+  vector<int> rankBySuit[4]; //Store ranks by suit for flush / straight flush
+  int highestRank = -1;
+
+  // Does basic count
+  computeCounts(cards, rankBySuit, highestRank);
+
+  //int numPairs = 0;
+  //int pairRanks[13];
+  // multiples (pairs / trips / quads)
+  int fourKindRank = -1;
+  vector<int> tripRanks;
+  vector<int> pairRanks;
+  detectMultiples(fourKindRank, tripRanks, pairRanks);
+
+ // int threeKindRank = -1;
+  //straight / flush / straight flush
+  bool hasStraight;
+  int  highStraightRank;
+  detectStraight(hasStraight, highStraightRank);
+
+//  int highestPairRank = -1;
+//  int secondPairRank = -1;
+
+  // Does StraightFlush & Flush
+  bool hasFlush;
+  int  flushSuit;
+  int  flushHighRank;
+  bool hasStraightFlush;
+  int  highStraightFlushRank;
+  detectFlushAndStraightFlush(rankBySuit, hasFlush, flushSuit,
+    flushHighRank, hasStraightFlush, highStraightFlushRank);
+
+  // Deos full house determining uses trips + pairs
+  bool hasFullHouse = false;
+  int fullHouseTripRank = -1;
+  if (!tripRanks.empty())
+  {
+    if (tripRanks.size() >= 2)
+    {
+      hasFullHouse       = true;
+      fullHouseTripRank  = tripRanks.back();   // highest trip
+    }
+    else if (!pairRanks.empty())
+    {
+       hasFullHouse       = true;
+       fullHouseTripRank  = tripRanks.back();
+     }
+  }
+/*
+  for(const auto& card:cards)
+  { // count ranks
+    int r = card.getRankIndex();
+    int s = card.getSuitIndex();
+
+    if(r >= 0 && r < 13)
+    {
+	rankCount[r]++;
+	if(r > highestRank)
+	{
+	  highestRank = r;
+	}
+    }
+
+    if(s >= 0 && s < 4)
+    {
+        suitCount[r]++;
+        if(r >=0 && r < 13)
+        {
+          rankBySuit[s].push_back(r);
+        }
+    }
+  }
+*/
+  // Collects triplets, pairs, & fours
+/*
+  for(int rank = 0; rank < 13; ++rank)
+  {
+    int count = rankCount[rank];
+    if(count > 0 && r > highestRank)
+    {
+	highestRank = rank; // track overall high card
+    }
+
+    if(count == 4)
+    { // Four of a kind
+      if(rank > fourKindRank)
+      {
+	fourKindRank = rank;
+      }
+    }
+    else if(count == 3)
+    { // Track highest trip
+      if(rank > threeKindRank)
+      {
+        threeKindRank = rank;
+      }
+    }
+    else if(count == 2)
+    {//Store all pair ranks
+     pairRanks[numPairs++] = rank;
+    }
+  }
+*/
+   // Deciding hand category
+   if(hasStraightFlush)
+   {
+       outRankValue = 8;
+       outHighCard  = highStraightFlushRank;
+       outHandName  = (highStraightFlushRank == 13) ? "Royal Flush" : "Straight Flush";
+   }
+   else if (fourKindRank != -1)
+   {
+       // Four of a Kind
+       outRankValue = 7;
+       outHighCard  = fourKindRank;
+       outHandName  = "Four of a Kind";
+   }
+   else if (hasFullHouse)
+   {
+       // Full House: three of one rank + at least one pair
+       outRankValue = 6;
+       outHighCard  = fullHouseTripRank;
+       outHandName  = "Full House";
+   }
+   else if (hasFlush)
+   {
+       outRankValue = 5;
+       outHighCard  = flushHighRank;
+       outHandName  = "Flush";
+   }
+   else if (hasStraight)
+   {
+       outRankValue = 4;
+       outHighCard  = highStraightRank;   // compare by the rank of the trips
+       outHandName  = "Straight";
+   }
+   else if (!tripRanks.empty())
+   {
+        // Three of a Kind only
+       outRankValue = 3;
+       outHighCard  = tripRanks.back;
+       outHandName  = "Three of a Kind";
+   }
+   else if (pairRanks.size() >= 2)
+   {/*
+      // Two Pair: use highest pair rank as the "high card" of the combo
+       int highestPair = pairRanks[0];
+       for (int i = 1; i < numPairs; ++i)
+       {
+           if (pairRanks[i] > highestPair)
+           {
+               highestPair = pairRanks[i];
+           }
+       }*/
+      outRankValue = 2;             // Two Pair
+      outHighCard  = pairRanks.back(); // highest pair
+      outHandName  = "Two Pair";
+   }
+   else if (pairRanks.size() == 1)
+   {
+       outRankValue = 1;             // One Pair
+       outHighCard  = pairRanks[0];
+       outHandName  = "Pair";
+   }
+   else
+   {
+       outRankValue = 0;             // High Card
+       outHighCard  = highestRank;
+       outHandName  = "High Card";
+   }
 }
 
 //////////////////////////////////////////////////////
@@ -342,13 +541,13 @@ void Game<U>::determineWinner()
 
     // 2) Evaluate both hands and set internal members
   check(playerAll, dealerAll);
-  if(winner = 1)
+  if(winner == 1)
   {
     cout << "You win with a "<<handName << " !" << endl;
     setCredit(credit + bet * 2);
     player.setWin();
   }
-  else if(winner = 2)
+  else if(winner == 2)
   {
     cout << "You lose!, Dealer wins with a"<<handName<< "!" << endl;
     dealer.setWin();
@@ -445,15 +644,12 @@ int Game<U>::getHandName() const
 template <typename U>
 void Game<U>::setHighCard(const vector<DeckOfCards<U>>& cards)
 {
- // TODO: find highest rank in cards and store in highCard
-  int maxRank;
   if(cards.empty())
   {
    return;
   }
 
-  //continue this
-  maxRank = cards[0].getRankIndex();
+  int maxRank = cards[0].getRankIndex();
   DeckOfCards<U> bestCards = cards[0];
   for(const auto& card : cards)
   {
@@ -476,13 +672,38 @@ string Game<U>::getHighCard() const
     // TODO: return a descriptive string, e.g. face + suit
     // this should get the face & suit from the functions getRankIndex() 
     // and getSuitIndex() from the class DeckOfCards
-    int rank = highCard.getRankIndex(); // same as face
-    int suit = highCard.getSuitIndex();
-    const char *suitNames[4] = deck.suit; // gets the suits from the DeckOfCards class
-    const char *faceNames[13] = deck.face; // gets the faces from the DeckOfCards class
+
+    static const char *face[13] =
+        { "Ace", "Two", "Three", "Four", "Five", "Six", "Seven",
+          "Eight", "Nine", "Ten", "Jack", "Queen", "King"
+        }; // will be used for rank
+
+    static const char *suit[4] = { "Hearts", "Diamonds", "Clubs", "Spades" }; // will be used in suit
+
+    int rankIndex = highCard.getRankIndex(); // 0..12
+    int suitIndex = highCard.getSuitIndex(); // 0..3
+
+    // Safety check: highCard might not have been set
+    if(rankIndex < 0 || rankIndex > 12 || suitIndex < 0 || suitIndex > 3){
+	return "Unknown";
+    }
 
 //    return handName;
-    return string(faceNames[rank]) + " of " + suitNames[suit];
+    return std::string(face[rankIndex]) + " of " + suit[suitIndex];
+}
+
+//////////////////////////////////////////////////////
+template <typename U>
+void Game<U>::incrementRound()
+{
+  ++roundNum;
+}
+
+//////////////////////////////////////////////////////
+template <typename U>
+int Game<U>::getRoundNumber() const
+{
+  return roundNum;
 }
 
 //////////////////////////////////////////////////////
@@ -501,6 +722,240 @@ int Game<U>::valueInput(int& input)
 }
 
 //////////////////////////////////////////////////////
+template <typename U>
+void Game<U>::computeCounts(const vector<DeckOfCards<U>>& cards, std::vector<int> rankBySuit[4],
+	int& highestRank) // Helper Function
+{
+  for(int i = 0; i < 13; i++){
+    rankCount[i] = 0;
+  }
+
+  for(int i = 0; i < 4; i++){
+    suitCount[i] = 0;
+  }
+
+  highestRank = -1;
+
+  for(const auto& card:cards)
+  { // count ranks
+    int r = card.getRankIndex();
+    int s = card.getSuitIndex();
+
+    if(r >= 0 && r < 13)
+    {
+        rankCount[r]++;
+        if(r > highestRank)
+        {
+          highestRank = r;
+        }
+    }
+
+    if(s >= 0 && s < 4)
+    {
+        suitCount[r]++;
+        if(r >=0 && r < 13)
+        {
+          rankBySuit[s].push_back(r);
+        }
+    }
+  }
+}
+
+//////////////////////////////////////////////////////
+template <typename U>// Helper Function
+void Game<U>::detectMultiples(int& fourKindRank, std::vector<int>& tripRanks, std::vector<int>& pairRanks)
+{
+  fourKindRank = -1; // reset val
+  tripRanks.clear();
+  pairRanks.clear();
+
+  for(int rank = 0; rank < 13; ++rank)
+  {
+    int count = rankCount[rank];
+/*    if(count > 0 && r > highestRank)
+    {
+        highestRank = rank; // track overall high card
+    }
+*/
+    if(count == 4)
+    { // Four of a kind
+      if(rank > fourKindRank)
+      {
+        fourKindRank = rank;
+      }
+    }
+    else if(count == 3)
+    { // Track highest trip
+  /*    if(rank > threeKindRank)
+      {
+        threeKindRank = rank;
+      }*/
+       tripRanks.push_back(rank);
+    }
+    else if(count == 2)
+    {//Store all pair ranks
+     //pairRanks[numPairs++] = rank;
+      pairRanks.push_back(rank);
+    }
+  }
+ std::sort(tripRanks.begin(),tripRanks.end());
+ std::sort(pairRanks.begin(),pairRanks.end());
+}
+//////////////////////////////////////////////////////
+template <typename U>// Helper Function
+void Game<U>::detectStraight(bool& hasStriaght, int& hasStraightRank)
+{
+  bool present[14] = {false}; // 0..12 normal, 13 = ace-high
+  hasStriaght = false;
+  hasStraightRank = -1;
+
+  for(int rank = 0; rank < 13; rank++)
+  {
+    if(rankCount[rank] > 0)
+    {
+      present[rank] = true;
+      if(rank == 0)
+      {
+	present[13] = true;
+      }
+    }
+  }
+
+  for(int rank = 13; rank >= 4; rank++)
+  {
+    if(present[rank]
+	&& present[rank - 1]
+	&& present[rank - 2]
+	&& present[rank - 3]
+	&& present[rank - 4])
+    {
+      hasStriaght = true;
+      hasStraightRank = rank;
+      break;
+    }
+  }
+}
+//////////////////////////////////////////////////////
+template <typename U>// Helper Function
+void Game<U>::detectFlushAndStraightFlush(std::vector<int>& rankBySuit, bool& hasFlush,
+	int& flushSuit, int& flushHighRank, bool& hasStraightFlush, int& hasStraightFlushRank)
+{
+  hasFlush = false;
+  flushSuit = -1;
+  flushHighRank = -1;
+  hasStraightFlush = false;
+  hasStraightFlushRank = -1;
+
+  std::vector<int> flushRanks;
+
+  // Find any flush
+  for(int s = 0; s < 4; ++s)
+  {
+    if(suitCount[s] >= 5)
+    {
+      hasFlush  = true;
+      flushSuit = s;
+
+      flushRanks = rankBySuit[s];
+      std::sort(flushRanks.begin(), flushRanks.end(), std::greater<int>());
+      if(!flushRanks.empty())
+      {
+        flushHighRank = flushRanks.front();
+        break;
+      }
+    }
+  }
+
+  if(!hasFlush || flushSuit == -1)
+  {
+    return;
+  }
+
+  // Straight Flush detection within flushSuit
+  bool presentSF[14] = {false};
+
+  for(int r : rankBySuit[flushSuit])
+  {
+    if(r >= 0 && r < 13)
+    {
+      presentSF[r] = true;
+      if (r == 0)
+      {
+         presentSF[13] = true; // Ace-high in that suit
+      }
+    }
+  }
+
+  for (int rank = 13; rank >= 4; --rank)
+  {
+    if (presentSF[rank]
+        && presentSF[rank - 1]
+	&& presentSF[rank - 2]
+	&& presentSF[rank - 3]
+        && presentSF[rank - 4])
+        {
+          hasStraightFlush     = true;
+          hasStraightFlushRank = rank;
+          break;
+        }
+  }
+}
+
+//////////////////////////////////////////////////////
+template<typename U>
+bool Game<U>::SaveToFile(const string& filename) const
+{
+  fstream inputFile(filename, ios::out | ios::app);
+  if(inputFile.is_open())
+  {
+    cout << "Records of games wins/loss" << endl;
+    inputFile << determineWinner() << endl;
+    inputFile.close();
+    return true;
+  }
+  else
+  {
+    cerr << "File couldn't be opened" << endl;
+    return false;
+  }
+}
+
+//////////////////////////////////////////////////////
+template<typename U>
+void Game<U>::playRound(int& CommCards)
+{
+  dealCards(CommCards); // Deal Cards (fills player, dealer, and commonCards members)
+
+  // Build combined 7 cardvectors
+  std::vector<DeckOfCards<U>> playerCom;
+  std::vector<DeckOfCards<U>> dealerCom;
+
+  const auto& playerHand = player.getHand();
+  const auto& dealerHand = dealer.getHand();
+
+  // Player: hole + common
+  playerCom.insert(playerCom.end(), playerHand.begin(), playerHand.end());
+  playerCom.insert(playerCom.end(), commonCards.begin(), commonCards.end());
+  // Dealer: hole + common
+  dealerCom.insert(dealerCom.end(), dealerHand.begin(), dealerHand.end());
+  dealerCom.insert(dealerCom.end(), commonCards.begin(), commonCards.end());
+
+  // Evaluate and determine winner
+  check(playerCom, dealerCom);
+  determineWinner();// uses winner, rankValue, handName, highCard
+
+  if(winner == 1)
+  {
+    credit+=bet; // TODO: Will add some payout rule
+  }
+  else if(winner == 2){
+    credit-=bet;
+  }
+// winner == 0 -> tie, no credit change
+}
+
+//////////////////////////////////////////////////////
+
 // Output operator
 template<typename TYPE>
 std::ostream &operator<< (std::ostream &output,const Game<TYPE> &Game_Output)

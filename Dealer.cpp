@@ -52,9 +52,9 @@ void Dealer<D>::addCard(DeckOfCards<D> const& cards){
 template<typename D>
 void Dealer<D>::displayHand() const{
   cout << dealerName <<" Hand: " << endl;
-  for(const auto& deckHand : dealerHand)
+  for(const auto& card : dealerHand)
   {
-    deckHand.Dealing(); // Prints the cards in the hand
+    card.toString(); // Prints the cards in the hand
     // std::cout << "Card: " << card.getRank() << " of " << card.getSuit() << std::endl;
   }
 

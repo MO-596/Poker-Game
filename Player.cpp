@@ -54,9 +54,9 @@ template<typename P>
 void Player<P>::displayHand() const
 {
   cout << getName() << "'s Hand: " << endl;
-  for(const auto& deckHand : playerHand)
+  for(const auto& card : playerHand)
   {
-    deckHand.Dealing(); // Prints the cards in the hand
+    card.toString(); // Prints the cards in the hand
     // std::cout << "Card: " << card.getRank() << " of " << card.getSuit() << std::endl;
   }
 }
