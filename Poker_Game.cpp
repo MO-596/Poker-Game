@@ -404,61 +404,6 @@ void Game<U>::evaluteHand(const vector<DeckOfCards<U>>& cards, int& outRankValue
        fullHouseTripRank  = tripRanks.back();
      }
   }
-/*
-  for(const auto& card:cards)
-  { // count ranks
-    int r = card.getRankIndex();
-    int s = card.getSuitIndex();
-
-    if(r >= 0 && r < 13)
-    {
-	rankCount[r]++;
-	if(r > highestRank)
-	{
-	  highestRank = r;
-	}
-    }
-
-    if(s >= 0 && s < 4)
-    {
-        suitCount[r]++;
-        if(r >=0 && r < 13)
-        {
-          rankBySuit[s].push_back(r);
-        }
-    }
-  }
-*/
-  // Collects triplets, pairs, & fours
-/*
-  for(int rank = 0; rank < 13; ++rank)
-  {
-    int count = rankCount[rank];
-    if(count > 0 && r > highestRank)
-    {
-	highestRank = rank; // track overall high card
-    }
-
-    if(count == 4)
-    { // Four of a kind
-      if(rank > fourKindRank)
-      {
-	fourKindRank = rank;
-      }
-    }
-    else if(count == 3)
-    { // Track highest trip
-      if(rank > threeKindRank)
-      {
-        threeKindRank = rank;
-      }
-    }
-    else if(count == 2)
-    {//Store all pair ranks
-     pairRanks[numPairs++] = rank;
-    }
-  }
-*/
    // Deciding hand category
    if(hasStraightFlush)
    {
@@ -561,6 +506,12 @@ void Game<U>::determineWinner()
   }
 // addWins();
 }
+//////////////////////////////////////////////////////
+template <typename U>
+int Game<U>::getWinner() const
+{
+  return winner;
+}
 
 //////////////////////////////////////////////////////
 // Map hand name to a numeric value
@@ -634,9 +585,10 @@ void Game<U>::setHandName(const string& handName)
 //////////////////////////////////////////////////////
 // Get hand-name index (should be the same as rankValue)
 template <typename U>
-int Game<U>::getHandName() const
+string Game<U>::getHandName() const
 {
-  return rankValue;
+  //return rankValue;
+  return handName;
 }
 
 //////////////////////////////////////////////////////

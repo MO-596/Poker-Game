@@ -139,7 +139,6 @@ bool playProcess(int choice, Game<int>* game)
     case NEW_ROUND:{
       cout << "<------ New Round ------>" << endl;
       //Display round
-      game->incrementRound();
       cout << "<------ Round" << game->getRoundNumber() <<" ------>" << endl;
 
       // Show current credits
@@ -167,7 +166,9 @@ bool playProcess(int choice, Game<int>* game)
 
       // Deal Community cards + hole cards
       int CommCards = 5;
-      game->dealCards(CommCards);
+//      game->dealCards(CommCards);
+      game->playRound(CommCards);
+
       break;
     }
 

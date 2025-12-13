@@ -34,12 +34,13 @@ class Game
     void check(const vector<DeckOfCards<U>>&, const vector<DeckOfCards<U>>&);
 //    void evaluteHand(const vector<DeckOfCards<U>>&,int&,int&,string&);
     void determineWinner();
+    int getWinner() const;
 
     void setRankValue(const string&);
     int getRankValue() const;
 
     void setHandName(const string&);
-    int getHandName() const;
+    string getHandName() const;
 
     void setHighCard(const vector<DeckOfCards<U>>&);
     string getHighCard() const;
